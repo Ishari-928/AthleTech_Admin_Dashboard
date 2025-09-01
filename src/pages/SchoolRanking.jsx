@@ -7,14 +7,12 @@ const SchoolRanking = () => {
   const [schoolFilter, setSchoolFilter] = useState('all')
 
   const rankings = [
-    { school: 'Royal College', firstPlaces: 8, secondPlaces: 5, thirdPlaces: 3, totalPoints: 37 },
-    { school: 'Ananda College', firstPlaces: 6, secondPlaces: 7, thirdPlaces: 4, totalPoints: 36 },
-    { school: "St. Joseph's College", firstPlaces: 5, secondPlaces: 6, thirdPlaces: 8, totalPoints: 35 },
-    { school: 'Trinity College', firstPlaces: 4, secondPlaces: 4, thirdPlaces: 6, totalPoints: 26 },
-    { school: 'Nalanda College', firstPlaces: 4, secondPlaces: 3, thirdPlaces: 5, totalPoints: 23 },
-    { school: 'Visakha College', firstPlaces: 3, secondPlaces: 4, thirdPlaces: 2, totalPoints: 19 },
-    { school: 'Devi Balika', firstPlaces: 3, secondPlaces: 2, thirdPlaces: 4, totalPoints: 17 },
-    { school: 'Musaeus College', firstPlaces: 2, secondPlaces: 3, thirdPlaces: 3, totalPoints: 15 },
+    { school: 'A', firstPlaces: 1, secondPlaces: 1, thirdPlaces: 1, totalPoints: 9 },
+    { school: 'B', firstPlaces: 1, secondPlaces: 1, thirdPlaces: 0, totalPoints: 8 },
+    { school: "C", firstPlaces: 5, secondPlaces: 0, thirdPlaces: 0, totalPoints: 5 },
+    { school: 'D', firstPlaces: 0, secondPlaces: 0, thirdPlaces: 0, totalPoints: 0 },
+    { school: 'E', firstPlaces: 0, secondPlaces: 0, thirdPlaces: 1, totalPoints: 1 },
+   
   ]
 
   const columns = [

@@ -1,190 +1,130 @@
-import React, { useState } from 'react'
-import Table from '../components/common/Table'
+// pages/NewsUpdates.jsx
+import React, { useState, useEffect } from 'react';
+import Table from '../components/common/Table';
+import CreateNewsModal from '../components/modals/CreateNewsModal';
+import { getNewsUpdates, deleteNewsUpdate } from '../api/news';
+import { useAuth } from '../context/AuthContext';
 
 const NewsUpdates = () => {
-  const [showForm, setShowForm] = useState(false)
-  const [formData, setFormData] = useState({
-    date: '',
-    topic: '',
-    description: '',
-    image: null,
-  })
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [news, setNews] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const { user } = useAuth();
 
-  const news = [
-    {
-      date: '2023-07-15',
-      topic: 'National Athletic Meet Announced',
-      description:
-        'The National Athletic Meet 2023 will be held at Sugathadasa Stadium from August 10-12.',
-      image:
-        'https://uploadthingy.s3.us-west-1.amazonaws.com/kR44zyz1YVNzjiP3fgUKr9/image.png',
-    },
-    {
-      date: '2023-07-10',
-      topic: 'New National Record in Long Jump',
-      description:
-        "Amali Silva sets new national record in women's long jump with a leap of 6.45m.",
-      image:
-        'https://uploadthingy.s3.us-west-1.amazonaws.com/kR44zyz1YVNzjiP3fgUKr9/image.png',
-    },
-    {
-      date: '2023-07-05',
-      topic: 'Registration Open for Junior Championships',
-      description:
-        'Registration for the Junior National Championships is now open. Deadline is July 25.',
-      image:
-        'https://uploadthingy.s3.us-west-1.amazonaws.com/kR44zyz1YVNzjiP3fgUKr9/image.png',
-    },
-    {
-      date: '2023-06-30',
-      topic: 'Training Camp for National Squad',
-      description:
-        'A two-week training camp for the national athletics squad will be held from July 15-30.',
-      image:
-        'https://uploadthingy.s3.us-west-1.amazonaws.com/kR44zyz1YVNzjiP3fgUKr9/image.png',
-    },
-  ]
+  useEffect(() => {
+    fetchNews();
+  }, []);
+
+  const fetchNews = async () => {
+    try {
+      setLoading(true);
+      const response = await getNewsUpdates();
+      setNews(response.data);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to fetch news');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleInactive = async (newsId) => {
+    if (!window.confirm('Are you sure you want to mark this news as inactive?')) {
+      return;
+    }
+
+    try {
+      await deleteNewsUpdate(newsId);
+      setNews(news.filter(item => item.news_id !== newsId));
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to delete news');
+    }
+  };
 
   const columns = [
     { header: 'Date', accessor: 'date' },
-    { header: 'News Topic', accessor: 'topic' },
-    { header: 'Description', accessor: 'description' },
+    { header: 'News Topic', accessor: 'news_topic' },
+    { header: 'Description', accessor: 'news_description' },
     {
       header: 'Image',
       accessor: 'image',
-      cell: (value) => (
+      cell: (value) => value ? (
         <img
           src={value}
           alt="News"
           className="h-12 w-20 object-cover rounded"
         />
+      ) : (
+        <span className="text-gray-400">No image</span>
+      ),
+    },
+    {
+      header: 'Status',
+      accessor: 'status',
+      cell: (value) => (
+        <span className={`px-2 py-1 rounded text-xs ${
+          value === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+        }`}>
+          {value}
+        </span>
       ),
     },
     {
       header: 'Actions',
-      accessor: 'topic',
-      cell: () => (
+      accessor: 'news_id',
+      cell: (value, row) => (
         <div className="flex space-x-2">
-          <button className="text-blue-600 hover:text-blue-800">Edit</button>
-          <button className="text-red-600 hover:text-red-800">Delete</button>
+          {user?.role === 'superadmin' && row.status === 'active' && (
+            <button 
+              onClick={() => handleInactive(value)}
+              className="text-red-600 hover:text-red-800"
+            >
+              Inactive
+            </button>
+          )}
         </div>
       ),
     },
-  ]
+  ];
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
-  }
-
-  const handleImageChange = (e) => {
-    setFormData((prev) => ({ ...prev, image: e.target.files[0] }))
-  }
-
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    console.log('Form submitted:', formData)
-    setShowForm(false)
-    setFormData({
-      date: '',
-      topic: '',
-      description: '',
-      image: null,
-    })
+  if (loading) {
+    return <div className="flex justify-center items-center h-64">Loading...</div>;
   }
 
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-[#05041D]">News Updates</h1>
 
-      {showForm && (
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <h2 className="text-lg font-medium text-[#05041D] mb-4">Add News</h2>
-          <form onSubmit={handleSubmit}>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
-                <input
-                  type="date"
-                  name="date"
-                  value={formData.date}
-                  onChange={handleInputChange}
-                  className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#FF5722]"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">News Topic</label>
-                <input
-                  type="text"
-                  name="topic"
-                  value={formData.topic}
-                  onChange={handleInputChange}
-                  className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#FF5722]"
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-              <textarea
-                name="description"
-                value={formData.description}
-                onChange={handleInputChange}
-                rows={4}
-                className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#FF5722]"
-                required
-              />
-            </div>
-
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Image</label>
-              <input
-                type="file"
-                name="image"
-                onChange={handleImageChange}
-                className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#FF5722]"
-                accept="image/*"
-                required
-              />
-            </div>
-
-            <div className="flex justify-end space-x-2">
-              <button
-                type="button"
-                onClick={() => setShowForm(false)}
-                className="px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-100"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="px-4 py-2 bg-[#FF5722] text-white rounded hover:bg-[#B33F18]"
-              >
-                Add News
-              </button>
-            </div>
-          </form>
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+          {error}
         </div>
       )}
+
+      <CreateNewsModal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onNewsCreated={fetchNews}
+      />
 
       <div className="bg-white rounded-lg shadow-sm">
         <div className="p-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-lg font-medium text-[#05041D]">News List</h2>
-            <button
-              onClick={() => setShowForm(true)}
-              className="bg-[#FF5722] text-white px-4 py-2 rounded hover:bg-[#B33F18]"
-            >
-              Add News
-            </button>
+            {user?.role === 'admin' || user?.role === 'superadmin' ? (
+              <button
+                onClick={() => setShowCreateModal(true)}
+                className="bg-[#FF5722] text-white px-4 py-2 rounded hover:bg-[#B33F18]"
+              >
+                Add New News
+              </button>
+            ) : null}
           </div>
           <Table columns={columns} data={news} />
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default NewsUpdates
+export default NewsUpdates;

@@ -1,260 +1,240 @@
-import React, { useState } from 'react'
-import Table from '../components/common/Table'
+import React, { useState, useEffect } from 'react';
+import Table from '../components/common/Table';
+import CoachModal from '../components/modals/CoachModal';
+import { getCoaches, createCoach, updateCoach, deleteCoach } from '../api/coach';
+import { useAuth } from '../context/AuthContext';
+import {
+  Box,
+  Button,
+  IconButton,
+  Typography,
+  Snackbar,
+  Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  CircularProgress
+} from '@mui/material';
+import { Edit, Delete, Add } from '@mui/icons-material';
 
 const CoachDetails = () => {
-  const [showForm, setShowForm] = useState(false)
-  const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    whatsapp: '',
-    mobile: '',
-    facebook: '',
-    instagram: '',
-    image: null,
-  })
+  const [coaches, setCoaches] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editData, setEditData] = useState(null);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [coachToDelete, setCoachToDelete] = useState(null);
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+  const { user } = useAuth();
 
-  const coaches = [
-    {
-      name: 'Susanthika Jayasinghe',
-      description:
-        'Former Olympic medalist specialized in sprint events. Over 15 years of coaching experience.',
-      whatsapp: '+94-71-1234567',
-      mobile: '+94-71-1234567',
-      facebook: 'susanthika.official',
-      instagram: '@susanthika_j',
-      image:
-        'https://uploadthingy.s3.us-west-1.amazonaws.com/kR44zyz1YVNzjiP3fgUKr9/image.png',
-    },
-    {
-      name: 'Sugath Thilakarathne',
-      description:
-        'National coach for middle distance events with expertise in 800m and 1500m training.',
-      whatsapp: '+94-72-7654321',
-      mobile: '+94-72-7654321',
-      facebook: 'sugath.coach',
-      instagram: '@sugath_coach',
-      image:
-        'https://uploadthingy.s3.us-west-1.amazonaws.com/kR44zyz1YVNzjiP3fgUKr9/image.png',
-    },
-    {
-      name: 'Damayanthi Dharsha',
-      description:
-        "Specialized in women's sprinting events. Former national record holder in 200m.",
-      whatsapp: '+94-77-9876543',
-      mobile: '+94-77-9876543',
-      facebook: 'damayanthi.d',
-      instagram: '@damayanthi_coach',
-      image:
-        'https://uploadthingy.s3.us-west-1.amazonaws.com/kR44zyz1YVNzjiP3fgUKr9/image.png',
-    },
-    {
-      name: 'Pradeep Nishantha',
-      description:
-        'Field events specialist focusing on javelin throw and shot put techniques.',
-      whatsapp: '+94-76-1122334',
-      mobile: '+94-76-1122334',
-      facebook: 'pradeep.coach',
-      instagram: '@pradeep_field',
-      image:
-        'https://uploadthingy.s3.us-west-1.amazonaws.com/kR44zyz1YVNzjiP3fgUKr9/image.png',
-    },
-  ]
+  useEffect(() => {
+    fetchCoaches();
+  }, []);
+
+  const fetchCoaches = async () => {
+  try {
+    setLoading(true);
+    const response = await getCoaches();
+    // Filter out inactive coaches
+    const activeCoaches = response.data.filter(coach => coach.status === 'active');
+    setCoaches(activeCoaches);
+  } catch (error) {
+    console.error('Error fetching coaches:', error);
+    showSnackbar('Error fetching coaches', 'error');
+  } finally {
+    setLoading(false);
+  }
+};
+
+  const showSnackbar = (message, severity = 'success') => {
+    setSnackbar({ open: true, message, severity });
+  };
+
+  const handleCreateCoach = async (formData) => {
+    try {
+      setLoading(true);
+      await createCoach(formData);
+      setModalOpen(false);
+      fetchCoaches(); // Refetch to get the new coach with ID
+      showSnackbar('Coach created successfully');
+    } catch (error) {
+      console.error('Error creating coach:', error);
+      showSnackbar(error.response?.data?.message || 'Error creating coach', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUpdateCoach = async (formData) => {
+    try {
+      setLoading(true);
+      await updateCoach(editData.coach_id, formData);
+      setModalOpen(false);
+      setEditData(null);
+      fetchCoaches(); // Refetch to get updated data
+      showSnackbar('Coach updated successfully');
+    } catch (error) {
+      console.error('Error updating coach:', error);
+      showSnackbar(error.response?.data?.message || 'Error updating coach', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+const handleDeleteCoach = async () => {
+  try {
+    setLoading(true);
+    await deleteCoach(coachToDelete.coach_id); // This will use hard delete
+    
+    // Remove from local state
+    setCoaches(prevCoaches => 
+      prevCoaches.filter(coach => coach.coach_id !== coachToDelete.coach_id)
+    );
+    
+    setDeleteConfirmOpen(false);
+    setCoachToDelete(null);
+    showSnackbar('Coach deleted successfully');
+  } catch (error) {
+    console.error('Error deleting coach:', error);
+    showSnackbar(error.response?.data?.message || 'Error deleting coach', 'error');
+  } finally {
+    setLoading(false);
+  }
+};
+
+  const openEditModal = (coach) => {
+    setEditData(coach);
+    setModalOpen(true);
+  };
+
+  const openDeleteConfirm = (coach) => {
+    setCoachToDelete(coach);
+    setDeleteConfirmOpen(true);
+  };
 
   const columns = [
     {
       header: 'Profile',
-      accessor: 'image',
+      accessor: 'profile_image_url',
       cell: (value) => (
         <img
-          src={value}
+          src={value || '/default-avatar.png'}
           alt="Coach"
           className="h-12 w-12 object-cover rounded-full"
+          onError={(e) => {
+            e.target.src = '/default-avatar.png';
+          }}
         />
       ),
     },
     { header: 'Coach Name', accessor: 'name' },
     { header: 'Description', accessor: 'description' },
-    { header: 'WhatsApp', accessor: 'whatsapp' },
-    { header: 'Mobile', accessor: 'mobile' },
-    { header: 'Facebook', accessor: 'facebook' },
-    { header: 'Instagram', accessor: 'instagram' },
+    { header: 'Mobile', accessor: 'contact_no' },
+    {
+      header: 'WhatsApp',
+      accessor: 'whatsapp',
+      cell: (value) => value || '-',
+    },
+    {
+      header: 'Facebook',
+      accessor: 'social_media',
+      cell: (value) => value?.facebook || '-',
+    },
     {
       header: 'Actions',
-      accessor: 'name',
-      cell: (value) => (
+      accessor: 'coach_id',
+      cell: (value, row) => (
         <div className="flex space-x-2">
-          <button className="text-blue-600 hover:text-blue-800">Edit</button>
-          <button className="text-red-600 hover:text-red-800">Delete</button>
+          <IconButton
+            size="small"
+            onClick={() => openEditModal(row)}
+            color="primary"
+          >
+            <Edit />
+          </IconButton>
+          <IconButton
+            size="small"
+            onClick={() => openDeleteConfirm(row)}
+            color="error"
+            disabled={user?.role !== 'superadmin'}
+          >
+            <Delete />
+          </IconButton>
         </div>
       ),
     },
-  ]
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
-  }
-
-  const handleImageChange = (e) => {
-    setFormData((prev) => ({ ...prev, image: e.target.files[0] }))
-  }
-
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    console.log('Form submitted:', formData)
-    setShowForm(false)
-    setFormData({
-      name: '',
-      description: '',
-      whatsapp: '',
-      mobile: '',
-      facebook: '',
-      instagram: '',
-      image: null,
-    })
-  }
+  ];
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-[#05041D]">Coaches Details</h1>
+      <Typography variant="h4" className="text-[#05041D]">
+        Coaches Details
+      </Typography>
 
-      {showForm && (
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <h2 className="text-lg font-medium text-[#05041D] mb-4">Add Coach</h2>
-          <form onSubmit={handleSubmit}>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Coach Name
-                </label>
-                <input
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleInputChange}
-                  className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#FF5722]"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  WhatsApp
-                </label>
-                <input
-                  type="text"
-                  name="whatsapp"
-                  value={formData.whatsapp}
-                  onChange={handleInputChange}
-                  className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#FF5722]"
-                  required
-                />
-              </div>
-            </div>
+      <Box className="bg-white rounded-lg shadow-sm p-6">
+        <Box className="flex justify-between items-center mb-4">
+          <Typography variant="h6" className="text-[#05041D]">
+            Coaches List
+          </Typography>
+          <Button
+            variant="contained"
+            startIcon={<Add />}
+            onClick={() => setModalOpen(true)}
+            sx={{ bgcolor: '#FF5722', '&:hover': { bgcolor: '#E64A19' } }}
+            disabled={!user || (user.role !== 'admin' && user.role !== 'superadmin')}
+          >
+            Add Coach
+          </Button>
+        </Box>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Mobile
-                </label>
-                <input
-                  type="text"
-                  name="mobile"
-                  value={formData.mobile}
-                  onChange={handleInputChange}
-                  className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#FF5722]"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Facebook
-                </label>
-                <input
-                  type="text"
-                  name="facebook"
-                  value={formData.facebook}
-                  onChange={handleInputChange}
-                  className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#FF5722]"
-                />
-              </div>
-            </div>
-
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Instagram
-              </label>
-              <input
-                type="text"
-                name="instagram"
-                value={formData.instagram}
-                onChange={handleInputChange}
-                className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#FF5722]"
-              />
-            </div>
-
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Description
-              </label>
-              <textarea
-                name="description"
-                value={formData.description}
-                onChange={handleInputChange}
-                rows={3}
-                className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#FF5722]"
-                required
-              />
-            </div>
-
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Profile Image
-              </label>
-              <input
-                type="file"
-                name="image"
-                onChange={handleImageChange}
-                accept="image/*"
-                className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#FF5722]"
-                required
-              />
-            </div>
-
-            <div className="flex justify-end space-x-2">
-              <button
-                type="button"
-                onClick={() => setShowForm(false)}
-                className="px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-100"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="px-4 py-2 bg-[#FF5722] text-white rounded hover:bg-[#B33F18]"
-              >
-                Add Coach
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
-
-      <div className="bg-white rounded-lg shadow-sm">
-        <div className="p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-medium text-[#05041D]">Coaches List</h2>
-            <button
-              onClick={() => setShowForm(true)}
-              className="bg-[#FF5722] text-white px-4 py-2 rounded hover:bg-[#B33F18]"
-            >
-              Add Coach
-            </button>
-          </div>
+        {loading && coaches.length === 0 ? (
+          <Box display="flex" justifyContent="center" p={3}>
+            <CircularProgress />
+          </Box>
+        ) : (
           <Table columns={columns} data={coaches} />
-        </div>
-      </div>
-    </div>
-  )
-}
+        )}
+      </Box>
 
-export default CoachDetails
+      <CoachModal
+        open={modalOpen}
+        onClose={() => {
+          setModalOpen(false);
+          setEditData(null);
+        }}
+        onSubmit={editData ? handleUpdateCoach : handleCreateCoach}
+        loading={loading}
+        editData={editData}
+      />
+
+      <Dialog open={deleteConfirmOpen} onClose={() => setDeleteConfirmOpen(false)}>
+        <DialogTitle>Confirm Delete</DialogTitle>
+        <DialogContent>
+          Are you sure you want to delete {coachToDelete?.name}?
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteConfirmOpen(false)}>Cancel</Button>
+          <Button onClick={handleDeleteCoach} color="error" disabled={loading}>
+            {loading ? 'Deleting...' : 'Delete'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+      >
+        <Alert
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
+          severity={snackbar.severity}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
+    </div>
+  );
+};
+
+export default CoachDetails;

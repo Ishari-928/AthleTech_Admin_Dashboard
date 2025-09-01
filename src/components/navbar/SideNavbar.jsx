@@ -18,6 +18,11 @@ const menuItems = [
     icon: <LayoutDashboard size={20} />,
   },
   {
+    name: 'System Users',
+    path: '/system-users',
+    icon: <UserCog size={20} />,
+  },
+  {
     name: 'All Registered Athletes',
     path: '/athletes',
     icon: <Users size={20} />,
@@ -50,6 +55,11 @@ const menuItems = [
   {
     name: 'Coaches Details',
     path: '/coaches',
+    icon: <UserCog size={20} />,
+  },
+  {
+    name: 'All Events List',
+    path: '/all-events',
     icon: <UserCog size={20} />,
   },
 ]

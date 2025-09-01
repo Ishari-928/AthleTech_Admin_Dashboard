@@ -1,0 +1,145 @@
+import React, { useState } from 'react';
+import { requestOtp } from '../../api/auth';
+import { useAuth } from '../../context/AuthContext';
+import { Eye, EyeOff } from 'lucide-react'; 
+
+const ResetPasswordModal = ({ onClose, onGetOtp, email, isForgotPassword = false }) => {
+  const { user } = useAuth();
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
+
+  //eye icon state
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+
+  const validateForm = () => {
+    const newErrors = {};
+    
+    if (!newPassword) newErrors.newPassword = 'New password is required';
+    else if (newPassword.length < 8) newErrors.newPassword = 'Password must be at least 8 characters';
+    
+    if (!confirmPassword) newErrors.confirmPassword = 'Please confirm your password';
+    else if (newPassword !== confirmPassword) newErrors.confirmPassword = 'Passwords do not match';
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!validateForm()) return;
+    
+    setLoading(true);
+    try {
+      const purpose = isForgotPassword ? "reset_password" : "change_password";
+      await requestOtp(isForgotPassword ? email : user.email, purpose);
+      
+      onGetOtp({
+        newPassword,
+        confirmPassword
+      });
+    } catch (error) {
+      setErrors({ general: error.response?.data?.message || 'Failed to request OTP' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
+      <div
+        className="rounded-lg p-6 w-full max-w-md"
+        style={{
+          background: 'linear-gradient(135deg, #05041D 0%, #FF5722 100%)',
+        }}
+      >
+        <h1 className="text-3xl font-bold mb-4 text-[#FFFFFF] text-center">
+          {isForgotPassword ? 'Reset Password' : 'Change Password'}
+        </h1>
+
+        {errors.general && (
+          <div className="mb-4 p-2 bg-red-100 border border-red-400 text-red-700 rounded">
+            {errors.general}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit}>
+
+          <div className="mb-4 relative">
+            <label className="block text-m font-medium text-gray-200 mb-1">
+              New Password
+            </label>
+            <input
+              type={showNew ? 'text' : 'password'}
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              className={`w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-[#FF5722] ${
+                errors.newPassword ? 'border-red-500' : 'border-gray-300'
+              }`}
+              required
+              minLength={8}
+            />
+            <button
+              type="button"
+              className="absolute right-3 top-9 text-gray-300"
+              onClick={() => setShowNew(!showNew)}
+            >
+              {showNew ? <EyeOff size={20} /> : <Eye size={20} />}
+            </button>
+            {errors.newPassword && (
+              <p className="text-red-300 text-xs mt-1">{errors.newPassword}</p>
+            )}
+          </div>
+
+          <div className="mb-6 relative">
+            <label className="block text-m font-medium text-gray-200 mb-1">
+              Confirm New Password
+            </label>
+            <input
+              type={showConfirm ? 'text' : 'password'}
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className={`w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-[#FF5722] ${
+                errors.confirmPassword ? 'border-red-500' : 'border-gray-300'
+              }`}
+              required
+              minLength={8}
+            />
+            <button
+              type="button"
+              className="absolute right-3 top-9 text-gray-300"
+              onClick={() => setShowConfirm(!showConfirm)}
+            >
+              {showConfirm ? <EyeOff size={20} /> : <Eye size={20} />}
+            </button>
+            {errors.confirmPassword && (
+              <p className="text-red-300 text-xs mt-1">{errors.confirmPassword}</p>
+            )}
+          </div>
+          <div className="flex justify-center space-x-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 border border-gray-300 rounded text-gray-200 hover:bg-[#B33F18]"
+              disabled={loading}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 bg-[#FF5722] text-white rounded hover:bg-[#B33F18] disabled:opacity-50"
+              disabled={loading}
+            >
+              {loading ? 'Sending OTP...' : 'Get OTP'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+export default ResetPasswordModal;

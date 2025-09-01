@@ -1,145 +1,252 @@
-import React, { useState } from 'react'
-import Table from '../components/common/Table'
-import FilterBar from '../components/common/FilterBar'
+import React, { useState, useEffect } from 'react';
+import Table from '../components/common/Table';
+import FilterBar from '../components/common/FilterBar';
+import api from '../api/api';
 
 const AthletesList = () => {
-  const [yearFilter, setYearFilter] = useState('2023')
-  const [schoolFilter, setSchoolFilter] = useState('all')
-  const [genderFilter, setGenderFilter] = useState('all')
-  const [ageGroupFilter, setAgeGroupFilter] = useState('all')
-  const [eventFilter, setEventFilter] = useState('all')
+  const [yearFilter, setYearFilter] = useState('all');
+  const [schoolFilter, setSchoolFilter] = useState('all');
+  const [genderFilter, setGenderFilter] = useState('all');
+  const [ageGroupFilter, setAgeGroupFilter] = useState('all');
+  const [eventFilter, setEventFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [searchTerm, setSearchTerm] = useState('');
 
-  const athletes = [
-    {
-      id: 'BIB001',
-      name: 'Saman Perera',
-      school: 'Royal College',
-      contact: '071-1234567',
-      address: '123 Main St, Colombo',
-      events: '100m Sprint, 200m Sprint',
-      payment: 'Paid',
-      ageGroup: 'Under 18',
-      approved: true,
-      fees: 'Rs. 2500',
-    },
-    {
-      id: 'BIB002',
-      name: 'Amali Silva',
-      school: 'Visakha College',
-      contact: '072-7654321',
-      address: '456 Park Ave, Kandy',
-      events: 'Long Jump',
-      payment: 'Pending',
-      ageGroup: 'Under 16',
-      approved: false,
-      fees: 'Rs. 1500',
-    },
-    {
-      id: 'BIB003',
-      name: 'Kamal Jayawardena',
-      school: 'Ananda College',
-      contact: '077-9876543',
-      address: '789 Hill St, Galle',
-      events: 'Shot Put, Discus Throw',
-      payment: 'Paid',
-      ageGroup: 'Under 21',
-      approved: true,
-      fees: 'Rs. 3000',
-    },
-    {
-      id: 'BIB004',
-      name: 'Nimal Bandara',
-      school: 'Nalanda College',
-      contact: '076-1122334',
-      address: '101 Lake Rd, Colombo',
-      events: '200m Sprint, 400m Sprint',
-      payment: 'Paid',
-      ageGroup: 'Under 18',
-      approved: true,
-      fees: 'Rs. 2500',
-    },
-    {
-      id: 'BIB005',
-      name: 'Chamari Atapattu',
-      school: 'Devi Balika',
-      contact: '070-5566778',
-      address: '202 Beach Rd, Negombo',
-      events: 'Javelin Throw',
-      payment: 'Pending',
-      ageGroup: 'Under 18',
-      approved: false,
-      fees: 'Rs. 1500',
-    },
-  ]
+  const [athletes, setAthletes] = useState([]);
+  //new
+  const [filteredAthletes, setFilteredAthletes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [processingId, setProcessingId] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
+
+   // Fetch unique values for filters
+  const [yearOptions, setYearOptions] = useState([]);
+  const [schoolOptions, setSchoolOptions] = useState([]);
+  const [genderOptions, setGenderOptions] = useState([]);
+  const [ageGroupOptions, setAgeGroupOptions] = useState([]);
+  const [eventOptions, setEventOptions] = useState([]);
+
+  const fetchAthletes = async () => {
+    try {
+      const res = await api.get("/api/v1/athletes");
+      // setAthletes(res.data.data);
+
+      //new
+      const athletesData = res.data.data;
+      setAthletes(athletesData);
+      setFilteredAthletes(athletesData);
+      extractFilterOptions(athletesData); // Extract unique values for filters
+
+    } catch (err) {
+      console.error("Error fetching athletes:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  //new
+  const extractFilterOptions = (athletesData) => {
+
+    const uniqueYears = [...new Set(athletesData.map(athlete => athlete.year))];
+    setYearOptions(uniqueYears);
+    // Extract unique schools
+    const schools = [...new Set(athletesData.map(athlete => athlete.school))];
+    setSchoolOptions(schools);
+    
+    // Extract unique genders
+    const genders = [...new Set(athletesData.map(athlete => athlete.gender))];
+    setGenderOptions(genders);
+    
+    // Extract unique age groups
+    const ageGroups = [...new Set(athletesData.map(athlete => athlete.age_group))];
+    setAgeGroupOptions(ageGroups);
+    
+    // Extract unique events (flatten arrays)
+    const allEvents = athletesData.flatMap(athlete => 
+      Array.isArray(athlete.selected_events) 
+        ? athlete.selected_events 
+        : [athlete.selected_events]
+    );
+    const uniqueEvents = [...new Set(allEvents.filter(event => event))];
+    setEventOptions(uniqueEvents);
+  };
+
+  useEffect(() => {
+    fetchAthletes();
+  }, []);
+
+   useEffect(() => {
+    applyFilters();
+  }, [ yearFilter, schoolFilter, genderFilter, ageGroupFilter, eventFilter, statusFilter, searchTerm, athletes]);
+
+  //new
+  const applyFilters = () => {
+    let filtered = [...athletes];
+
+    if(yearFilter !== 'all') {
+      filtered = filtered.filter(athlete => athlete.year === yearFilter);
+    }
+    
+    // School filter
+    if (schoolFilter !== 'all') {
+      filtered = filtered.filter(athlete => athlete.school === schoolFilter);
+    }
+
+    // Gender filter
+    if (genderFilter !== 'all') {
+      filtered = filtered.filter(athlete => athlete.gender === genderFilter);
+    }
+
+    // Age group filter
+    if (ageGroupFilter !== 'all') {
+      filtered = filtered.filter(athlete => athlete.age_group === ageGroupFilter);
+    }
+
+    // Event filter
+    if (eventFilter !== 'all') {
+      filtered = filtered.filter(athlete => 
+        Array.isArray(athlete.selected_events)
+          ? athlete.selected_events.includes(eventFilter)
+          : athlete.selected_events === eventFilter
+      );
+    }
+
+    // Status filter
+    if (statusFilter !== 'all') {
+      const statusBool = statusFilter === 'approved';
+      filtered = filtered.filter(athlete => athlete.approved === statusBool);
+    }
+
+    // Search filter
+    if (searchTerm.trim()) {
+      const term = searchTerm.toLowerCase().trim();
+      filtered = filtered.filter(athlete => 
+        athlete.name.toLowerCase().includes(term) ||
+        athlete.bib_no.toString().includes(term) ||
+        athlete.email.toLowerCase().includes(term) ||
+        athlete.contact_no.includes(term)
+      );
+    }
+
+    setFilteredAthletes(filtered);
+  };
+
+  
+
+
+  const handleApprove = async (id) => {
+    try {
+      setProcessingId(id);
+      await api.patch(`/api/v1/athletes/${id}/approve`);
+      setAthletes((prev) =>
+        prev.map((ath) =>
+          ath.athlete_id === id ? { ...ath, approved: true } : ath
+        )
+      );
+      alert('Athlete approved successfully!');
+    } catch (err) {
+      console.error("Error approving athlete:", err);
+      alert('Error approving athlete: ' + (err.response?.data?.message || err.message));
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this athlete?')) {
+      return;
+    }
+    
+    setDeletingId(id);
+    try {
+      await api.delete(`/api/v1/athletes/${id}`);
+      // Remove the athlete from local state (soft delete)
+      setAthletes((prev) => prev.filter((ath) => ath.athlete_id !== id));
+      alert('Athlete deleted successfully!');
+    } catch (err) {
+      console.error("Error deleting athlete:", err);
+      alert('Error deleting athlete: ' + (err.response?.data?.message || err.message));
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+
 
   const columns = [
-    { header: 'BIB', accessor: 'id' },
+    { header: 'BIB', accessor: 'bib_no' },
     { header: 'Name', accessor: 'name' },
     { header: 'School/Club', accessor: 'school' },
-    { header: 'Contact No', accessor: 'contact' },
-    { header: 'Address', accessor: 'address' },
-    { header: 'Events', accessor: 'events' },
+    { header: 'Contact No', accessor: 'contact_no' },
     {
-      header: 'Payment Status',
-      accessor: 'payment',
-      cell: (value) => (
-        <span
-          className={`px-2 py-1 rounded-full text-xs ${
-            value === 'Paid'
-              ? 'bg-green-100 text-green-800'
-              : 'bg-yellow-100 text-yellow-800'
-          }`}
-        >
-          {value}
-        </span>
-      ),
+      header: 'Events',
+      accessor: 'selected_events',
+      cell: (value) => Array.isArray(value) ? value.join(", ") : value
     },
-    { header: 'Age Group', accessor: 'ageGroup' },
+    { header: 'Age Group', accessor: 'age_group' },
+    { header: 'Gender', accessor: 'gender' },
     {
       header: 'Approved',
       accessor: 'approved',
-      cell: (value) => (
-        <span
-          className={`px-2 py-1 rounded-full text-xs ${
-            value ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+      cell: (value, row) => (
+         <button
+          onClick={() => !value && handleApprove(row.athlete_id)}
+          disabled={value || processingId === row.athlete_id}
+          className={`px-3 py-1 rounded-md text-sm font-medium ${
+            value 
+              ? "bg-green-600 text-white cursor-default" 
+              : processingId === row.athlete_id
+                ? "bg-gray-400 text-gray-800 cursor-not-allowed"
+                : "bg-orange-500 text-white hover:bg-orange-600"
           }`}
         >
-          {value ? 'Yes' : 'No'}
-        </span>
+          {processingId === row.athlete_id ? "Processing..." : value ? "Approved" : "Approve"}
+        </button>
+
       ),
     },
-    { header: 'Fees', accessor: 'fees' },
     {
       header: 'Actions',
-      accessor: 'id',
-      cell: (value) => (
-        <div className="flex space-x-2">
-          <button className="text-blue-600 hover:text-blue-800">Edit</button>
-          <button className="text-[#FF5722] hover:text-[#B33F18]">Delete</button>
-        </div>
+      accessor: 'athlete_id',
+      cell: (value, row) => (
+        <button 
+          onClick={() => handleDelete(value)}
+          disabled={deletingId === value}
+          className={`px-3 py-1 rounded-md text-sm font-medium ${
+            deletingId === value
+              ? "bg-gray-400 text-gray-800 cursor-not-allowed"
+              : "bg-red-600 hover:bg-red-700 text-white"
+          }`}
+        >
+          {deletingId === value ? "Deleting..." : "Delete"}
+        </button>
       ),
     },
-  ]
+  ];
+
+if (loading) return <p>Loading athletes...</p>;
 
   const filters = [
     {
-      label: 'Year',
+      label: 'Select Year',
       options: [
-        { value: 'all', label: 'All Years' },
-        { value: '2023', label: '2023' },
-        { value: '2022', label: '2022' },
-        { value: '2021', label: '2021' },
+        { value: 'all', label: 'Select Year' },
+        ...yearOptions.map(year => ({
+          value: year,
+          label: year
+        }))
       ],
-      value: yearFilter,
+      value: schoolFilter,
       onChange: setYearFilter,
     },
     {
       label: 'School/Club',
       options: [
         { value: 'all', label: 'All Schools' },
-        { value: 'royal', label: 'Royal College' },
-        { value: 'visakha', label: 'Visakha College' },
-        { value: 'ananda', label: 'Ananda College' },
+        ...schoolOptions.map(school => ({
+          value: school,
+          label: school
+        }))
       ],
       value: schoolFilter,
       onChange: setSchoolFilter,
@@ -148,8 +255,10 @@ const AthletesList = () => {
       label: 'Gender',
       options: [
         { value: 'all', label: 'All' },
-        { value: 'male', label: 'Male' },
-        { value: 'female', label: 'Female' },
+        ...genderOptions.map(gender => ({
+          value: gender,
+          label: gender.charAt(0).toUpperCase() + gender.slice(1)
+        }))
       ],
       value: genderFilter,
       onChange: setGenderFilter,
@@ -158,11 +267,10 @@ const AthletesList = () => {
       label: 'Age Group',
       options: [
         { value: 'all', label: 'All' },
-        { value: 'under12', label: 'Under 12' },
-        { value: 'under14', label: 'Under 14' },
-        { value: 'under16', label: 'Under 16' },
-        { value: 'under18', label: 'Under 18' },
-        { value: 'under21', label: 'Under 21' },
+        ...ageGroupOptions.map(age_group => ({
+          value: age_group,
+          label: age_group
+        }))
       ],
       value: ageGroupFilter,
       onChange: setAgeGroupFilter,
@@ -171,26 +279,41 @@ const AthletesList = () => {
       label: 'Event',
       options: [
         { value: 'all', label: 'All Events' },
-        { value: '100m', label: '100m Sprint' },
-        { value: '200m', label: '200m Sprint' },
-        { value: 'longjump', label: 'Long Jump' },
-        { value: 'shotput', label: 'Shot Put' },
+        ...eventOptions.map(selected_events => ({
+          value: selected_events,
+          label: selected_events
+        }))
       ],
       value: eventFilter,
       onChange: setEventFilter,
     },
+    {
+      label: 'Status',
+      options: [
+        { value: 'all', label: 'All' },
+        { value: 'approved', label: 'Approved' },
+        { value: 'pending', label: 'Pending' }
+      ],
+      value: statusFilter,
+      onChange: setStatusFilter,
+    }
   ]
 
+  // const handleSearch = (term) => {
+  //   console.log('Searching for:', term)
+  // }
+
   const handleSearch = (term) => {
-    console.log('Searching for:', term)
-  }
+    setSearchTerm(term);
+  };
 
   const handleClearFilters = () => {
-    setYearFilter('all')
-    setSchoolFilter('all')
-    setGenderFilter('all')
-    setAgeGroupFilter('all')
-    setEventFilter('all')
+    setSchoolFilter('all');
+    setGenderFilter('all');
+    setAgeGroupFilter('all');
+    setEventFilter('all');
+    setStatusFilter('all');
+    setSearchTerm('');
   }
 
   return (
@@ -202,6 +325,8 @@ const AthletesList = () => {
         filters={filters}
         onSearch={handleSearch}
         onClear={handleClearFilters}
+        searchTerm={searchTerm}
+        onSearchTermChange={setSearchTerm}
       />
       <div className="bg-white rounded-lg shadow-sm">
         <div className="p-6">
@@ -209,11 +334,15 @@ const AthletesList = () => {
             <h2 className="text-lg font-medium text-[#05041D]">
               Athletes List
             </h2>
-            <button className="bg-[#FF5722] text-white px-4 py-2 rounded hover:bg-[#B33F18]">
-              Add New Athlete
+            <button
+                onClick={() => window.open("http://localhost:3002/registration", "_blank")}
+                className="text-white font-bold px-4 py-2 rounded bg-gradient-to-r from-[#05041D] to-[#FF5722] hover:from-[#FF5722] hover:to-[#B33F18] transition duration-300"
+              >      
+              + Add New Athlete
             </button>
+
           </div>
-          <Table columns={columns} data={athletes} />
+          <Table columns={columns} data={filteredAthletes} />
         </div>
       </div>
     </div>

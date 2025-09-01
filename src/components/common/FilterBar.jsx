@@ -1,14 +1,49 @@
 import React, { useState } from 'react'
 
-const FilterBar = ({ filters, onSearch, onClear }) => {
-  const [searchTerm, setSearchTerm] = useState('')
+const FilterBar = ({ filters, onSearch, onClear, searchTerm: externalSearchTerm, onSearchTermChange  }) => {
+   const [internalSearchTerm, setInternalSearchTerm] = useState('')
+  // const [searchTerm, setSearchTerm] = useState('')
+const searchTerm = externalSearchTerm !== undefined ? externalSearchTerm : internalSearchTerm
+
+  const handleSearchChange = (value) => {
+    if (onSearchTermChange) {
+      onSearchTermChange(value)
+    } else {
+      setInternalSearchTerm(value)
+    }
+  }
 
   const handleSearch = () => {
-    if (onSearch) onSearch(searchTerm)
+    const trimmedTerm = searchTerm.trim()
+    if (trimmedTerm.length < 2 && trimmedTerm.length > 0) {
+      alert('Please enter at least 2 characters to search')
+      return
+    }
+
+    if (trimmedTerm.length > 50) {
+      alert('Search term cannot exceed 50 characters')
+      return
+    }
+
+     // Validate if search contains only special characters
+    const specialChars = /[^a-zA-Z0-9\s@.]/
+    if (trimmedTerm && !/[a-zA-Z0-9]/.test(trimmedTerm)) {
+      alert('Please enter a valid search term with letters or numbers')
+      return
+    }
+
+    // if (onSearch) onSearch(searchTerm)
+    if (onSearch) onSearch(trimmedTerm)
+  }
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      handleSearch()
+    }
   }
 
   const handleClear = () => {
-    setSearchTerm('')
+    handleSearchChange('')
     if (onClear) onClear()
   }
 
@@ -43,9 +78,11 @@ const FilterBar = ({ filters, onSearch, onClear }) => {
               <input
                 type="text"
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e) => handleSearchChange(e.target.value)}
+                onKeyPress={handleKeyPress}
                 placeholder="Search..."
                 className="flex-1 p-2 border border-gray-300 rounded-l focus:outline-none focus:ring-1 focus:ring-[#FF5722]"
+                maxLength={50}
               />
               <button
                 onClick={handleSearch}

@@ -16,11 +16,13 @@ import FieldPerformance from './pages/FieldPerformance';
 import TrackPerformance from './pages/TrackPerformance';
 import PerformanceDetails from './pages/PerformanceDetails';
 import Login from './components/login/Login';
-import ForgotPassword from './components/login/ForgotPassword';
 import CreateAdmin from './pages/CreateAdmin';
+import SystemUsers from './pages/SystemUsers';
 
 import Layout from './components/layout/Layout';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import ForgotPassword from './components/forgot-password/ForgotPassword';
+import AllEvents from './pages/AllEvents';
 
 //  Protected route wrapper with optional role check
 const ProtectedRoute = ({ children, requireRole }) => {
@@ -41,7 +43,6 @@ function App() {
           {/* Public Routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
-
           {/* Super Admin Only */}
           <Route
             path="/admin/create"
@@ -145,7 +146,28 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/system-users"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <SystemUsers />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/all-events"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <AllEvents />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
         </Routes>
+        
       </Router>
     </AuthProvider>
   );
