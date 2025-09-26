@@ -32,7 +32,6 @@ const searchTerm = externalSearchTerm !== undefined ? externalSearchTerm : inter
       return
     }
 
-    // if (onSearch) onSearch(searchTerm)
     if (onSearch) onSearch(trimmedTerm)
   }
 

@@ -1,4 +1,3 @@
-// src/api/login.js
 import api from "./api";
 
 export const loginAdmin = async ({ email, password }) => {
@@ -8,7 +7,6 @@ export const loginAdmin = async ({ email, password }) => {
   // console.error("Login response data:", response);
   // console.warn("Login response data:",  response.data.token);
 
-  // Optionally store token if you’re using one in header later
   if (data.token) {
     localStorage.setItem("token", response.data.token);
   }

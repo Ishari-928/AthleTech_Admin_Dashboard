@@ -7,19 +7,17 @@ import { cancelAdmin } from "../api/admins";
 
 const SystemUsers = () => {
 
-    const { user } = useAuth(); // get current login user
+    const { user } = useAuth(); 
     const [showModal, setShowModal] = useState(false);
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    // Fetch system users from backend
   const fetchUsers = async () => {
     try {
       setLoading(true);
       const res = await api.get("/api/v1/admins");
       const data = res.data.data;
 
-      // map DB fields → frontend table fields
       const formatted = data.map((u) => ({
         id: u.admin_id,
         fullName: u.name,
@@ -41,20 +39,18 @@ const SystemUsers = () => {
     fetchUsers();
   }, []);
 
-  // Handle block/unblock action
   const handleCancelUser = async (userId) => {
     try {
       console.log("Canceling user with ID:", userId);
       await cancelAdmin(userId);
       alert("User canceled successfully");
-      fetchUsers(); // refresh list
+      fetchUsers(); 
     } catch (err) {
       console.log("Error in canceling user", err);
       alert(err?.response?.data?.message || "Error canceling user");
     }
   };
 
-  // Define columns for table
   const columns = [
     { header: "Full Name", accessor: "fullName" },
     { header: "Email", accessor: "email" },
@@ -104,13 +100,12 @@ const SystemUsers = () => {
             )}
         </div>
 
-        {/* Modal */}
-      {/* {showModal && <CreateAdmin onClose={() => setShowModal(false)} />} */}
+       
 
       {showModal && (
         <CreateAdmin
           onClose={() => setShowModal(false)}
-          onSuccess={fetchUsers}   // re-fetch user list after adding
+          onSuccess={fetchUsers}   
         />
       )}
 

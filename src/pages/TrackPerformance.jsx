@@ -17,7 +17,6 @@ const TrackPerformance = () => {
   const [timeValues, setTimeValues] = useState({});
   const [placeValues, setPlaceValues] = useState({});
 
-  // Filter options
   const [yearOptions, setYearOptions] = useState([]);
   const [schoolOptions, setSchoolOptions] = useState([]);
   const [genderOptions, setGenderOptions] = useState([]);
@@ -27,7 +26,6 @@ const TrackPerformance = () => {
 
   const TRACK_EVENTS = ['60M', '100M', '200M', '400M', '800M', '100MH', '400MH'];
 
-  // Fetch athletes to build filter dropdown options
   const fetchAthletes = async () => {
     try {
       const res = await api.get("/api/v1/athletes");
@@ -86,7 +84,6 @@ const TrackPerformance = () => {
 
   const handleSearch = (term) => {
     setSearchTerm(term);
-    // Implement search filtering logic here
   };
 
   const handleClearFilters = () => {
@@ -136,7 +133,7 @@ const TrackPerformance = () => {
       setEditingRow(null);
       setTimeValues({});
       setPlaceValues({});
-      fetchHeats(); // Refresh data
+      fetchHeats(); 
       alert('Performance saved successfully!');
     } catch (error) {
       console.error('Error saving performance:', error);
@@ -156,8 +153,8 @@ const TrackPerformance = () => {
       await api.post('/api/v1/track-events/next-round', {
         event_name: eventFilter,
         year: yearFilter !== 'all' ? yearFilter : new Date().getFullYear(),
-        gender: genderFilter !== 'all' ? genderFilter : 'male', // Default value
-        age_group: ageGroupFilter !== 'all' ? ageGroupFilter : 'U16', // Default value
+        gender: genderFilter !== 'all' ? genderFilter : 'male', 
+        age_group: ageGroupFilter !== 'all' ? ageGroupFilter : 'U16', 
         round: nextRound
       });
       
@@ -184,7 +181,6 @@ const TrackPerformance = () => {
     }
   };
 
-  // Flatten heat data for table
   const tableData = heats.flatMap(heat => 
     heat.HeatAssignments.map(assignment => ({
       ...assignment,

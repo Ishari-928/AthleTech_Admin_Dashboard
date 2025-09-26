@@ -33,13 +33,11 @@ export const updateCoach = async (id, formData) => {
   return response.data;
 };
 
-// Use hard delete endpoint to completely remove the coach
 export const deleteCoach = async (id) => {
   const response = await api.delete(`/api/v1/coaches/${id}/delete`);
   return response.data;
 };
 
-// Keep this if you need both soft and hard delete options
 export const softDeleteCoach = async (id) => {
   const response = await api.delete(`/api/v1/coaches/${id}`);
   return response.data;

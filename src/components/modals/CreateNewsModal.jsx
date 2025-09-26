@@ -1,4 +1,3 @@
-// components/modals/CreateNewsModal.jsx
 import React, { useState } from 'react';
 import { createNewsUpdate } from "../../api/news";
 import { useAuth } from '../../context/AuthContext';

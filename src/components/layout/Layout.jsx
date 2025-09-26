@@ -14,7 +14,6 @@ const Layout = ({ children }) => {
   const profileMenuRef = useRef(null)
   
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event) {
       if (
@@ -38,7 +37,6 @@ const Layout = ({ children }) => {
 
   const handleVerifyOtp = (otp) => {
     console.log("OTP verified:", otp);
-    // The OTP verification and password change happens in the OtpModal component
     setShowOtpModal(false);
   };
 

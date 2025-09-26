@@ -1,11 +1,9 @@
 import api from "./api";
 
-// In your api/fieldEvents.js
 export const getFieldEvents = async (filters = {}) => {
   try {
     const params = new URLSearchParams();
     
-    // Add filters to params
     Object.keys(filters).forEach(key => {
       if (filters[key] !== undefined && filters[key] !== 'all') {
         params.append(key, filters[key]);
@@ -24,7 +22,6 @@ export const getFieldEventAthletes = async (filters = {}) => {
   try {
     const params = new URLSearchParams();
     
-    // Add filters to params
     Object.keys(filters).forEach(key => {
       if (filters[key] !== undefined && filters[key] !== 'all') {
         params.append(key, filters[key]);
@@ -44,7 +41,6 @@ export const updateFieldEventPerformance = async (performanceData) => {
   return response.data;
 };
 
-// Add to your api file
 export const autoCreateNextRound = (data) => {
   return api.post('/api/v1/track-events/auto-next-round', data);
 };

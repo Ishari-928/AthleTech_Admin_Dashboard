@@ -50,7 +50,7 @@ const SchoolRanking = () => {
 
   const handleSearch = (term) => {
     console.log('Searching for:', term)
-    // Add your search logic here
+    // Add search logic here
   }
 
   const handleClearFilters = () => {

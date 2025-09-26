@@ -36,8 +36,6 @@ const ChangePasswordModal = ({ onClose, onGetOtp }) => {
     
     setLoading(true);
     try {
-      // First verify current password by attempting to login
-      // This is a simplified approach - you might want a dedicated endpoint
       await requestOtp(user.email, 'first_login_change');
       onGetOtp({
         currentPassword,

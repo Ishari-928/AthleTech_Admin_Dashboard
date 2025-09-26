@@ -2,15 +2,15 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import api from "../api/api";
 import { loginAdmin } from "../api/login";
 
-// 1. Create context
+// Create context
 const AuthContext = createContext();
 
-// 2. Custom hook
+// Custom hook
 export const useAuth = () => useContext(AuthContext);
 
 
 
-// 3. Provider component
+// Provider component
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -28,13 +28,12 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  // 4. Login function
+  // Login function
   const login = async ({ email, password }) => {
     try {
       const response = await loginAdmin({ email, password });
       const data = response.data;
       console.log("Login response data:", data);
-      // localStorage.setItem("token", data.token);
       localStorage.setItem("name", data.name); 
       localStorage.setItem("role", data.user_role);
       localStorage.setItem("email", data.email);
@@ -43,12 +42,11 @@ export const AuthProvider = ({ children }) => {
       setIsAuthenticated(true);
       return data; 
     } catch (err) {
-      // alert("Login failed: " + (err.response?.data?.message || err.message));
-      throw err; // important! so handleSubmit catch can read err.response.data.message
+      throw err; 
     }
   };
 
-  // 5. Logout function
+  // Logout function
   const logout = () => {
     localStorage.clear();
     setIsAuthenticated(false);

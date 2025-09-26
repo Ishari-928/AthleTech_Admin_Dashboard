@@ -1,4 +1,3 @@
-// pages/NewsUpdates.jsx
 import React, { useState, useEffect } from 'react';
 import Table from '../components/common/Table';
 import CreateNewsModal from '../components/modals/CreateNewsModal';

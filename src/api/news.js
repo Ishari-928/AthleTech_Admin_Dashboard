@@ -1,4 +1,3 @@
-// api/news.js
 import api from "./api";
 
 export const getNewsUpdates = async () => {

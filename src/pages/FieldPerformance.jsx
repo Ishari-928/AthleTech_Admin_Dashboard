@@ -17,14 +17,12 @@ const FieldPerformance = () => {
   const [editingRow, setEditingRow] = useState(null);
   const [attemptValues, setAttemptValues] = useState({});
 
-  // Fetch unique values for filters
   const [yearOptions, setYearOptions] = useState([]);
   const [schoolOptions, setSchoolOptions] = useState([]);
   const [genderOptions, setGenderOptions] = useState([]);
   const [ageGroupOptions, setAgeGroupOptions] = useState([]);
   const [eventOptions, setEventOptions] = useState([]);
 
-  // Fetch athletes to extract filter options
   const fetchAthletes = async () => {
     try {
       const res = await api.get("/api/v1/athletes");
@@ -35,32 +33,25 @@ const FieldPerformance = () => {
     }
   };
 
-  // Extract unique values for filters
   const extractFilterOptions = (athletesData) => {
-    // Extract unique years
     const uniqueYears = [...new Set(athletesData.map(athlete => athlete.year))];
-    setYearOptions(uniqueYears.sort((a, b) => b - a)); // Sort descending
+    setYearOptions(uniqueYears.sort((a, b) => b - a)); 
     
-    // Extract unique schools
     const schools = [...new Set(athletesData.map(athlete => athlete.school))];
     setSchoolOptions(schools.sort());
     
-    // Extract unique genders
     const genders = [...new Set(athletesData.map(athlete => athlete.gender))];
     setGenderOptions(genders);
     
-    // Extract unique age groups
     const ageGroups = [...new Set(athletesData.map(athlete => athlete.age_group))];
     setAgeGroupOptions(ageGroups.sort());
     
-    // Extract unique events (flatten arrays)
     const allEvents = athletesData.flatMap(athlete => 
       Array.isArray(athlete.selected_events) 
         ? athlete.selected_events 
         : [athlete.selected_events]
     );
     const uniqueEvents = [...new Set(allEvents.filter(event => event))];
-    // Filter for field events only
     const fieldEvents = uniqueEvents.filter(event => 
       ['Long Jump', 'High Jump', 'Shot Put', 'Javelin Throw', 'Discus Throw', 'Triple Jump']
         .includes(event)
@@ -68,7 +59,6 @@ const FieldPerformance = () => {
     setEventOptions(fieldEvents.sort());
   };
 
-  // Fetch athletes and performances when filters change
   useEffect(() => {
     fetchAthletes();
     fetchData();
@@ -85,14 +75,11 @@ const FieldPerformance = () => {
         school: schoolFilter !== 'all' ? schoolFilter : undefined
       };
 
-      // Remove undefined values
       Object.keys(filters).forEach(key => filters[key] === undefined && delete filters[key]);
 
-      // Fetch athletes for this event
       const athletesResponse = await getFieldEventAthletes(filters);
       setAthletes(athletesResponse.data);
 
-      // Fetch existing performances
       const performancesResponse = await getFieldEvents(filters);
       setPerformances(performancesResponse.data);
     } catch (error) {
@@ -105,7 +92,6 @@ const FieldPerformance = () => {
 
   const handleSearch = (term) => {
     setSearchTerm(term);
-    // Implement search filtering logic here
   };
 
   const handleClearFilters = () => {
@@ -140,7 +126,7 @@ const FieldPerformance = () => {
   try {
     const performanceData = {
       athlete_id: athlete.athlete_id,
-      event_name: athlete.event_name || eventFilter, // Use the athlete's event_name if available
+      event_name: athlete.event_name || eventFilter, 
       year: yearFilter !== 'all' ? parseInt(yearFilter) : new Date().getFullYear(),
       gender: athlete.gender,
       age_group: athlete.age_group,
@@ -151,7 +137,7 @@ const FieldPerformance = () => {
     await updateFieldEventPerformance(performanceData);
     setEditingRow(null);
     setAttemptValues({});
-    fetchData(); // Refresh data
+    fetchData(); 
     alert('Performance saved successfully!');
   } catch (error) {
     console.error('Error saving performance:', error);
@@ -287,9 +273,7 @@ const FieldPerformance = () => {
     },
   ];
 
-  // Combine athletes and performances data
   const tableData = athletes.map(athlete => {
-  // Find performance for this specific athlete AND event
   const performance = performances.find(p => 
     p.athlete_id === athlete.athlete_id && p.event_name === athlete.event_name
   );

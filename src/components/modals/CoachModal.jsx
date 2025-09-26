@@ -24,10 +24,8 @@ const CoachModal = ({ open, onClose, onSubmit, loading, editData }) => {
 
   const [imagePreview, setImagePreview] = useState(null);
 
-  // Reset form when editData changes or modal opens/closes
   useEffect(() => {
     if (editData) {
-      // Pre-fill form with existing data when editing
       setFormData({
         name: editData.name || '',
         description: editData.description || '',
@@ -38,7 +36,6 @@ const CoachModal = ({ open, onClose, onSubmit, loading, editData }) => {
       });
       setImagePreview(editData.profile_image_url || null);
     } else {
-      // Reset form for new coach
       setFormData({
         name: '',
         description: '',
@@ -49,7 +46,7 @@ const CoachModal = ({ open, onClose, onSubmit, loading, editData }) => {
       });
       setImagePreview(null);
     }
-  }, [editData, open]); // Reset when editData changes or modal opens
+  }, [editData, open]); 
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -61,7 +58,6 @@ const CoachModal = ({ open, onClose, onSubmit, loading, editData }) => {
     if (file) {
       setFormData(prev => ({ ...prev, profile_image: file }));
       
-      // Create preview
       const reader = new FileReader();
       reader.onload = (e) => {
         setImagePreview(e.target.result);
@@ -80,7 +76,6 @@ const CoachModal = ({ open, onClose, onSubmit, loading, editData }) => {
       }
     });
 
-    // Add social media data
     const socialMedia = {
       facebook: formData.facebook
     };
