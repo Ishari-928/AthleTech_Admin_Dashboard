@@ -13,13 +13,11 @@ const AthletesList = () => {
   const [searchTerm, setSearchTerm] = useState('');
 
   const [athletes, setAthletes] = useState([]);
-  //new
   const [filteredAthletes, setFilteredAthletes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [processingId, setProcessingId] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
 
-   // Fetch unique values for filters
   const [yearOptions, setYearOptions] = useState([]);
   const [schoolOptions, setSchoolOptions] = useState([]);
   const [genderOptions, setGenderOptions] = useState([]);
@@ -29,13 +27,11 @@ const AthletesList = () => {
   const fetchAthletes = async () => {
     try {
       const res = await api.get("/api/v1/athletes");
-      // setAthletes(res.data.data);
 
-      //new
       const athletesData = res.data.data;
       setAthletes(athletesData);
       setFilteredAthletes(athletesData);
-      extractFilterOptions(athletesData); // Extract unique values for filters
+      extractFilterOptions(athletesData); 
 
     } catch (err) {
       console.error("Error fetching athletes:", err);
@@ -44,24 +40,19 @@ const AthletesList = () => {
     }
   };
 
-  //new
   const extractFilterOptions = (athletesData) => {
 
     const uniqueYears = [...new Set(athletesData.map(athlete => athlete.year))];
     setYearOptions(uniqueYears);
-    // Extract unique schools
     const schools = [...new Set(athletesData.map(athlete => athlete.school))];
     setSchoolOptions(schools);
     
-    // Extract unique genders
     const genders = [...new Set(athletesData.map(athlete => athlete.gender))];
     setGenderOptions(genders);
     
-    // Extract unique age groups
     const ageGroups = [...new Set(athletesData.map(athlete => athlete.age_group))];
     setAgeGroupOptions(ageGroups);
     
-    // Extract unique events (flatten arrays)
     const allEvents = athletesData.flatMap(athlete => 
       Array.isArray(athlete.selected_events) 
         ? athlete.selected_events 
@@ -79,7 +70,6 @@ const AthletesList = () => {
     applyFilters();
   }, [ yearFilter, schoolFilter, genderFilter, ageGroupFilter, eventFilter, statusFilter, searchTerm, athletes]);
 
-  //new
   const applyFilters = () => {
     let filtered = [...athletes];
 
@@ -87,22 +77,18 @@ const AthletesList = () => {
       filtered = filtered.filter(athlete => athlete.year === yearFilter);
     }
     
-    // School filter
     if (schoolFilter !== 'all') {
       filtered = filtered.filter(athlete => athlete.school === schoolFilter);
     }
 
-    // Gender filter
     if (genderFilter !== 'all') {
       filtered = filtered.filter(athlete => athlete.gender === genderFilter);
     }
 
-    // Age group filter
     if (ageGroupFilter !== 'all') {
       filtered = filtered.filter(athlete => athlete.age_group === ageGroupFilter);
     }
 
-    // Event filter
     if (eventFilter !== 'all') {
       filtered = filtered.filter(athlete => 
         Array.isArray(athlete.selected_events)
@@ -111,13 +97,11 @@ const AthletesList = () => {
       );
     }
 
-    // Status filter
     if (statusFilter !== 'all') {
       const statusBool = statusFilter === 'approved';
       filtered = filtered.filter(athlete => athlete.approved === statusBool);
     }
 
-    // Search filter
     if (searchTerm.trim()) {
       const term = searchTerm.toLowerCase().trim();
       filtered = filtered.filter(athlete => 
@@ -132,8 +116,6 @@ const AthletesList = () => {
   };
 
   
-
-
   const handleApprove = async (id) => {
     try {
       setProcessingId(id);
@@ -160,7 +142,6 @@ const AthletesList = () => {
     setDeletingId(id);
     try {
       await api.delete(`/api/v1/athletes/${id}`);
-      // Remove the athlete from local state (soft delete)
       setAthletes((prev) => prev.filter((ath) => ath.athlete_id !== id));
       alert('Athlete deleted successfully!');
     } catch (err) {
@@ -299,10 +280,6 @@ if (loading) return <p>Loading athletes...</p>;
     }
   ]
 
-  // const handleSearch = (term) => {
-  //   console.log('Searching for:', term)
-  // }
-
   const handleSearch = (term) => {
     setSearchTerm(term);
   };
@@ -326,6 +303,7 @@ if (loading) return <p>Loading athletes...</p>;
         onSearch={handleSearch}
         onClear={handleClearFilters}
         searchTerm={searchTerm}
+        searchValue={searchTerm}
         onSearchTermChange={setSearchTerm}
       />
       <div className="bg-white rounded-lg shadow-sm">
@@ -333,6 +311,9 @@ if (loading) return <p>Loading athletes...</p>;
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-lg font-medium text-[#05041D]">
               Athletes List
+              {searchTerm && ` - Searching for "${searchTerm}"`}
+              {filteredAthletes.length !== athletes.length && ` (${filteredAthletes.length} of ${athletes.length} results)`}
+
             </h2>
             <button
                 onClick={() => window.open("http://localhost:3002/registration", "_blank")}

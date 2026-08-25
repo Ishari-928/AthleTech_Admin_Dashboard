@@ -18,7 +18,6 @@ const ForgotPasswordModal = ({ onClose, onOtpSent }) => {
     setError('');
     setSuccess('');
 
-    // Validate email format
     if (!validateEmail(email)) {
       setError('Please enter a valid email address');
       setLoading(false);
@@ -34,7 +33,6 @@ const ForgotPasswordModal = ({ onClose, onOtpSent }) => {
           onOtpSent(email);
         }, 1500);
       } else {
-        // Email doesn't exist in the system
         setError('This email is not registered in our system.');
       }
     } catch (err) {

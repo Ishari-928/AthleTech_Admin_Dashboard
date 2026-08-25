@@ -23,8 +23,10 @@ import Layout from './components/layout/Layout';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import ForgotPassword from './components/forgot-password/ForgotPassword';
 import AllEvents from './pages/AllEvents';
+import TrackHeatPerformance from './pages/TrackHeatPerformance';
+import TrackSemifinalPerformance from './pages/TrackSemifinalPerformance';
+import TrackFinalPerformance from './pages/TrackFinalPerformance';
 
-//  Protected route wrapper with optional role check
 const ProtectedRoute = ({ children, requireRole }) => {
   const { isAuthenticated } = useAuth();
   const role = localStorage.getItem('role');
@@ -92,6 +94,36 @@ function App() {
               <ProtectedRoute>
                 <Layout>
                   <TrackPerformance />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/track-heat-performance"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <TrackHeatPerformance />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/track-semifinal-performance"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <TrackSemifinalPerformance />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/track-final-performance"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <TrackFinalPerformance />
                 </Layout>
               </ProtectedRoute>
             }

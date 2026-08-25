@@ -23,35 +23,35 @@ import { Users, Medal, Award, TrendingUp } from 'lucide-react'
 const Dashboard = () => {
   const summaryData = [
     {
-      title: 'Total Athletes',
+      title: 'Registerd Athletes 2024',
       value: 1245,
       icon: <Users size={24} />,
       color: 'blue',
-      change: '5%',
+      // change: '5%',
       isPositive: true,
     },
     {
-      title: 'Registered Events',
+      title: 'Registered Events 2024',
       value: 32,
       icon: <Medal size={24} />,
       color: 'orange',
-      change: '12%',
+      // change: '12%',
       isPositive: true,
     },
     {
-      title: 'Schools/Clubs',
+      title: 'Schools/Clubs 2024',
       value: 78,
       icon: <Award size={24} />,
       color: 'green',
-      change: '3%',
+      // change: '3%',
       isPositive: true,
     },
     {
-      title: 'Completed Events',
+      title: 'Completed Events 2024',
       value: 24,
       icon: <TrendingUp size={24} />,
       color: 'purple',
-      change: '75%',
+      // change: '75%',
       isPositive: true,
     },
   ]
@@ -79,81 +79,9 @@ const Dashboard = () => {
     { name: 'Jun', registrations: 145 },
   ]
 
-  const recentRegistrations = [
-    {
-      id: 'BIB001',
-      name: 'Saman Perera',
-      school: 'Royal College',
-      event: '100m Sprint',
-      ageGroup: 'Under 18',
-      gender: 'Male',
-      status: 'Approved',
-    },
-    {
-      id: 'BIB002',
-      name: 'Amali Silva',
-      school: 'Visakha College',
-      event: 'Long Jump',
-      ageGroup: 'Under 16',
-      gender: 'Female',
-      status: 'Pending',
-    },
-    {
-      id: 'BIB003',
-      name: 'Kamal Jayawardena',
-      school: 'Ananda College',
-      event: 'Shot Put',
-      ageGroup: 'Under 21',
-      gender: 'Male',
-      status: 'Approved',
-    },
-    {
-      id: 'BIB004',
-      name: 'Nimal Bandara',
-      school: 'Nalanda College',
-      event: '200m Sprint',
-      ageGroup: 'Under 18',
-      gender: 'Male',
-      status: 'Approved',
-    },
-    {
-      id: 'BIB005',
-      name: 'Chamari Atapattu',
-      school: 'Devi Balika',
-      event: 'Javelin Throw',
-      ageGroup: 'Under 18',
-      gender: 'Female',
-      status: 'Pending',
-    },
-  ]
-
-  const columns = [
-    { header: 'BIB', accessor: 'id' },
-    { header: 'Name', accessor: 'name' },
-    { header: 'School/Club', accessor: 'school' },
-    { header: 'Event', accessor: 'event' },
-    { header: 'Age Group', accessor: 'ageGroup' },
-    { header: 'Gender', accessor: 'gender' },
-    {
-      header: 'Status',
-      accessor: 'status',
-      cell: (value) => (
-        <span
-          className={`px-2 py-1 rounded-full text-xs ${
-            value === 'Approved'
-              ? 'bg-green-100 text-green-800'
-              : 'bg-yellow-100 text-yellow-800'
-          }`}
-        >
-          {value}
-        </span>
-      ),
-    },
-  ]
-
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-[#05041D]">Dashboard</h1>
+      <h1 className="text-2xl font-bold text-[#05041D]">Summary - 2024</h1>
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -243,16 +171,8 @@ const Dashboard = () => {
           </LineChart>
         </ResponsiveContainer>
       </div>
-
-      {/* Table */}
-      <div className="bg-white p-6 rounded-lg shadow-sm">
-        <h2 className="text-lg font-medium text-[#05041D] mb-4">
-          Recent Registrations
-        </h2>
-        <Table columns={columns} data={recentRegistrations} />
-      </div>
     </div>
   )
 }
 
-export default Dashboard
+export default Dashboard;

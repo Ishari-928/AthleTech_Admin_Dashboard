@@ -36,7 +36,6 @@ const CoachDetails = () => {
   try {
     setLoading(true);
     const response = await getCoaches();
-    // Filter out inactive coaches
     const activeCoaches = response.data.filter(coach => coach.status === 'active');
     setCoaches(activeCoaches);
   } catch (error) {
@@ -56,7 +55,7 @@ const CoachDetails = () => {
       setLoading(true);
       await createCoach(formData);
       setModalOpen(false);
-      fetchCoaches(); // Refetch to get the new coach with ID
+      fetchCoaches(); 
       showSnackbar('Coach created successfully');
     } catch (error) {
       console.error('Error creating coach:', error);
@@ -85,9 +84,8 @@ const CoachDetails = () => {
 const handleDeleteCoach = async () => {
   try {
     setLoading(true);
-    await deleteCoach(coachToDelete.coach_id); // This will use hard delete
+    await deleteCoach(coachToDelete.coach_id); 
     
-    // Remove from local state
     setCoaches(prevCoaches => 
       prevCoaches.filter(coach => coach.coach_id !== coachToDelete.coach_id)
     );
