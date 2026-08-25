@@ -5,15 +5,28 @@ import FilterBar from '../components/common/FilterBar'
 const SchoolRanking = () => {
   const [yearFilter, setYearFilter] = useState('2023')
   const [schoolFilter, setSchoolFilter] = useState('all')
+  const [searchTerm, setSearchTerm] = useState('')
 
   const rankings = [
-    { school: 'A', firstPlaces: 1, secondPlaces: 1, thirdPlaces: 1, totalPoints: 9 },
+    { school: 'ABC', firstPlaces: 1, secondPlaces: 1, thirdPlaces: 1, totalPoints: 9 },
     { school: 'B', firstPlaces: 1, secondPlaces: 1, thirdPlaces: 0, totalPoints: 8 },
     { school: "C", firstPlaces: 5, secondPlaces: 0, thirdPlaces: 0, totalPoints: 5 },
     { school: 'D', firstPlaces: 0, secondPlaces: 0, thirdPlaces: 0, totalPoints: 0 },
     { school: 'E', firstPlaces: 0, secondPlaces: 0, thirdPlaces: 1, totalPoints: 1 },
    
   ]
+
+ const filteredRankings = rankings.filter(item => {
+    // Search filter - search in school name
+    const matchesSearch = searchTerm === '' || 
+      item.school.toLowerCase().includes(searchTerm.toLowerCase())
+    
+    // School filter
+    const matchesSchool = schoolFilter === 'all' || 
+      item.school.toLowerCase().includes(schoolFilter.toLowerCase())
+
+    return matchesSearch && matchesSchool
+  })
 
   const columns = [
     { header: 'School/Club Name', accessor: 'school' },
@@ -28,9 +41,8 @@ const SchoolRanking = () => {
       label: 'Year',
       options: [
         { value: 'all', label: 'All Years' },
-        { value: '2023', label: '2023' },
-        { value: '2022', label: '2022' },
-        { value: '2021', label: '2021' },
+        { value: '2025', label: '2025' },
+        
       ],
       value: yearFilter,
       onChange: setYearFilter,
@@ -39,9 +51,11 @@ const SchoolRanking = () => {
       label: 'School/Club',
       options: [
         { value: 'all', label: 'All Schools' },
-        { value: 'royal', label: 'Royal College' },
-        { value: 'ananda', label: 'Ananda College' },
-        { value: 'stjoseph', label: "St. Joseph's College" },
+        { value: 'royal', label: 'ABC' },
+        { value: 'ananda', label: 'B' },
+        { value: 'stjoseph', label: "C" },
+        { value: 'stjoseph', label: "D" },
+        { value: 'stjoseph', label: "E" },
       ],
       value: schoolFilter,
       onChange: setSchoolFilter,
@@ -49,13 +63,14 @@ const SchoolRanking = () => {
   ]
 
   const handleSearch = (term) => {
-    console.log('Searching for:', term)
-    // Add search logic here
+    console.log('Search term received:', term)
+    setSearchTerm(term)
   }
 
   const handleClearFilters = () => {
     setYearFilter('all')
     setSchoolFilter('all')
+    setSearchTerm('')
   }
 
   return (
@@ -73,17 +88,26 @@ const SchoolRanking = () => {
       <div className="bg-white rounded-lg shadow-sm">
         <div className="p-6">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-medium text-[#05041D]">Rankings</h2>
+            <h2 className="text-lg font-medium text-[#05041D]">Rankings
+              {searchTerm && ` - Searching for "${searchTerm}"`}
+              {filteredRankings.length !== rankings.length && ` (${filteredRankings.length} of ${rankings.length} results)`}
+            </h2>
             <div className="flex space-x-2">
-              <button className="bg-[#1A73E8] text-white px-4 py-2 rounded hover:bg-blue-700">
+              {/* <button className="bg-[#1A73E8] text-white px-4 py-2 rounded hover:bg-blue-700">
                 Export PDF
-              </button>
-              <button className="bg-[#FF5722] text-white px-4 py-2 rounded hover:bg-[#B33F18]">
+              </button> */}
+              {/* <button className="bg-[#FF5722] text-white px-4 py-2 rounded hover:bg-[#B33F18]">
                 Print Report
-              </button>
+              </button> */}
             </div>
           </div>
-          <Table columns={columns} data={rankings} />
+           {filteredRankings.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              No schools found matching your search criteria.
+            </div>
+          ) : (
+            <Table columns={columns} data={filteredRankings} />
+          )}
         </div>
       </div>
     </div>

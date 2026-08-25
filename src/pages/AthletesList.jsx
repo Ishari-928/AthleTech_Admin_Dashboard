@@ -303,6 +303,7 @@ if (loading) return <p>Loading athletes...</p>;
         onSearch={handleSearch}
         onClear={handleClearFilters}
         searchTerm={searchTerm}
+        searchValue={searchTerm}
         onSearchTermChange={setSearchTerm}
       />
       <div className="bg-white rounded-lg shadow-sm">
@@ -310,6 +311,9 @@ if (loading) return <p>Loading athletes...</p>;
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-lg font-medium text-[#05041D]">
               Athletes List
+              {searchTerm && ` - Searching for "${searchTerm}"`}
+              {filteredAthletes.length !== athletes.length && ` (${filteredAthletes.length} of ${athletes.length} results)`}
+
             </h2>
             <button
                 onClick={() => window.open("http://localhost:3002/registration", "_blank")}
